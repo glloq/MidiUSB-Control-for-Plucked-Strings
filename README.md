@@ -5,7 +5,8 @@ code fait pour pouvoir jouer 15 accords sur une code avec plusieurs electroaiman
   - 1 pour le silencieux (normalement actif si non alimenté)
   - 1 pour le "grattage" de la corde (il faut prevoir un mecanisme pour n'actionner qu'une fois la corde sur le cycle entrée/sortie de la tige)
   
-il y a aussi la possibilité d'utiliser les messages pitchbend avec un servomoteur qui controle la monté/descente d'un demis ton
+L'electroaiamnt pour le grattage de la corde est geré en PWM en fonction dela velocité du message midi recu.
+il y a aussi la possibilité d'utiliser les messages pitchbend avec un servomoteur qui controle la monté/descente d'un demis ton de la corde
 
 
 Les réglages possibles du projet sont a faire dans settings.h:
