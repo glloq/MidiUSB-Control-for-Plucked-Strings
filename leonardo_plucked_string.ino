@@ -21,33 +21,43 @@ void setup() {
   // Set initial Servo position to SERVO_CENTER
   myservo.write(SERVO_CENTER);
 }
-
+bool mute_active=true;
 void loop() {
   // Check for MIDI messages
   if (MidiUSB.available()) {
+    //***********************************************************************************
     // Read the MIDI message
     midiEventPacket_t midiEvent = MidiUSB.read();
-    // CHECK if we'r using one channel
-    if (!MIDI_ON){
+    // CHECK if we'r using only one channel
+    byte status = midiEvent.header & 0xF0; // Le statut (Note On, Note Off, etc.)
+    byte channel = midiEvent.header & 0x0F; // Le canal MIDI
+    byte note = midiEvent.byte1; // La note MIDI
+    byte velocity = midiEvent.byte2; // La vélocité (pour les messages Note On/Off) 
+    
+       
+    if (MIDI_ON){
       // Check if the MIDI channel does not match MIDI_CHANNEL
-      if (midiEvent.header != 0 && (midiEvent.header & 0x0F) != MIDI_CHANNEL) {
-        // Ignore the MIDI message
+    if (channel != MIDI_CHANNEL) {
+          // Ignore the MIDI message
         return;
       }
     }
+    //************************************************************************************
     // Check if the message is a Pitch Bend
-    if (midiEvent.byte1 == MIDI_PITCH_BEND) {
+    if (status == MIDI_PITCH_BEND) {
       // Map the Pitch Bend value to the Servo position
-      int servoPos = map(midiEvent.byte2, 0, 127, SERVO_MIN, SERVO_MAX);
+      int pitchBendValue = velocity * 128 + note;      
+      int servoPos = map(pitchBendValue, 0, 16383, SERVO_MIN, SERVO_MAX);
       // Set the Servo position
       myservo.write(servoPos);
     }
+    //*************************************************************************************
     // Check if the message is a Note On
-    else if (midiEvent.byte1 == MIDI_NOTE_ON) {
+    else if (status == MIDI_NOTE_ON) {
       // Check if the Note is in the NOTES array
       int noteIndex = -1;
       for (int i = 0; i < sizeof(NOTES)/sizeof(int); i++) {
-        if (midiEvent.byte2 == NOTES[i]) {
+        if (note == NOTES[i]) {
           noteIndex = i;
           break;
         }
@@ -55,21 +65,29 @@ void loop() {
       // If the Note is in the NOTES array
       if (noteIndex >= 0) {
         // Activate the Mute if it's not already active
-        digitalWrite(MUTE_PIN, LOW);
+        if(mute_active){
+          digitalWrite(MUTE_PIN, HIGH);
+          mute_active=false;
+        }
         // Activate the Note pin
-        digitalWrite(NOTES_PIN[noteIndex], LOW);
-               // Activate the Strumming magnet for a certain amount of time
-        analogWrite(STRUMMING_PIN, MIN_PWM);
+        digitalWrite(NOTES_PIN[noteIndex], HIGH);
+        // maybe add some time here to get the time to hit the note before strumming 
+        
+        // set velocity
+        int pwmValue = map(velocity, 0, 127, MIN_PWM, 255);        
+         // Activate the Strumming magnet for a certain amount of time
+        analogWrite(STRUMMING_PIN, pwmValue);
         delay(TIME_HIT_DEFAULT);
         analogWrite(STRUMMING_PIN, 0);
       }
     }
+    //********************************************************************************************
     // Check if the message is a Note Off
-    else if (midiEvent.byte1 == MIDI_NOTE_OFF) {
+    else if (status == MIDI_NOTE_OFF) {
       // Check if the Note is in the NOTES array
       int noteIndex = -1;
       for (int i = 0; i < sizeof(NOTES)/sizeof(int); i++) {
-        if (midiEvent.byte2 == NOTES[i]) {
+        if (note == NOTES[i]) {
           noteIndex = i;
           break;
         }
@@ -77,18 +95,19 @@ void loop() {
       // If the Note is in the NOTES array
       if (noteIndex >= 0) {
         // Desactivate the Note pin
-        digitalWrite(NOTES_PIN[noteIndex], HIGH);
+        digitalWrite(NOTES_PIN[noteIndex], LOW);
         // Check if all the Note pins are deactivated
         bool allNotesOff = true;
         for (int i = 0; i < sizeof(NOTES)/sizeof(int); i++) {
-          if (digitalRead(NOTES_PIN[i]) == LOW) {
+          if (digitalRead(NOTES_PIN[i]) == HIGH) {
             allNotesOff = false;
             break;
           }
         }
-        // If all the Note pins are desactivated, desactivate the Mute
+        // If all the Note pins are desactivated, activate the Mute
         if (allNotesOff) {
-          digitalWrite(MUTE_PIN, HIGH);
+          digitalWrite(MUTE_PIN, LOW);
+          mute_active=true;
         }
       }
     }
