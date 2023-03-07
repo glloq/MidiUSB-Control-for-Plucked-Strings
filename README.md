@@ -1,4 +1,4 @@
-# --------------------   WORK IN PROGRESS  -------------------------------
+# --------------   WORK IN PROGRESS  -----------------
 
 code fait pour pouvoir jouer 15 accords sur une code avec plusieurs electroaimants lineaire :
   - 15 pour les accords
