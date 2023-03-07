@@ -1,5 +1,10 @@
 # --------------   WORK IN PROGRESS  -----------------
 
+## objectif 
+faire un code qui permet d'interepreter les messages midi envoyé par usb afin de jouer sur une seule codre d'un instrument.
+doit pouvoir s'adapter pour Guitare, Basse, Mandoline, Ukulélé, Banjo etc
+
+
 code fait pour pouvoir jouer 15 accords sur une code avec plusieurs electroaimants lineaire :
   - 15 pour les accords
   - 1 pour le silencieux (normalement actif si non alimenté)
@@ -8,7 +13,7 @@ code fait pour pouvoir jouer 15 accords sur une code avec plusieurs electroaiman
 L'electroaiamnt pour le grattage de la corde est geré en PWM en fonction dela velocité du message midi recu.
 il y a aussi la possibilité d'utiliser les messages pitchbend avec un servomoteur qui controle la monté/descente d'un demis ton de la corde
 
-
+## parametres 
 Les réglages possibles du projet sont a faire dans settings.h:
    - Les broches utilisées pour le grattage, le silencieux et le servomoteur (STRUMMING_PIN, MUTE_PIN, SERVO_PIN)
    - Les paramètres du servomoteur, tels que la position centrale et les deux extrêmes (SERVO_CENTER, SERVO_MIN, SERVO_MAX)
